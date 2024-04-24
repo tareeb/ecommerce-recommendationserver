@@ -1,0 +1,388 @@
+swagger: '2.0'
+
+info:
+  title: Recommendation System
+  description: These APIs will return recommended product IDs from the recommendation system.
+  version: '1.0'
+
+host: 127.0.0.1:5000
+schemes: 
+  - http
+
+paths:
+
+  "/":
+    get:
+      summary: Endpoint for rendering Home Page
+      description: |
+        This is the home URL that renders home.html containing the most popular and top selling products.
+        
+      tags:
+        - RenderHtml
+      produces:
+        - text/html
+      responses:
+        200:
+          description: home.html is rendered
+  
+  "/custhome":
+    get:
+      summary: Endpoint for rendering the customer home page
+      description: |
+        This endpoint renders the customer home page, based on the provided customer name.
+        If the customer is found in the data, it displays:
+        - Customer's most purchased products
+        - Frequently purchased products
+        - Recommended products.
+        If the customer is not found, it renders that the customer does not exist.
+
+        **Example Usage**: GET /custhome?name=customerId
+      tags:
+        - RenderHtml
+      produces:
+        - text/html
+      parameters:
+        - name: name
+          in: query
+          type: string
+          description: The id of the customer
+      
+      responses:
+        200:
+          description: HTML page rendered successfully
+    
+  "/productview":
+    get:
+      summary: Endpoint for rendering html of product details and similar recommended products.
+      description: |
+        This endpoint renders the product view page, displaying details of the specified product. 
+        If the product exists in the data, it renders its details and similar products. 
+        If the product does not exist, it renders that the product does not exist.
+
+        Example Usage: GET /productview?prod=example_product
+      tags:
+        - RenderHtml
+      produces:
+        - text/html
+      parameters:
+        - name: prod
+          in: query 
+          type: string
+          description: The name of the product
+      
+      responses:
+        200:
+          description: HTML page is rendered
+
+  "/mostpopular":
+    get:
+      summary: Endpoint for retrieving the most popular products
+      description: |
+        Retrieves the most popular products based on their overall popularity.
+
+      tags:
+        - GetProductsList
+      responses:
+        200:
+          description: JSON object containing a list of the most popular products
+          schema:
+            type: object
+            properties:
+              products:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Product:
+                      type: string
+                    Rate:
+                      type: number
+          examples:
+            application/json:
+              products:
+                - Product: "Product_1"
+                  Rate: 10
+                - Product: "Product_2"
+                  Rate: 15
+
+  "/topselling":
+      get:
+        summary: Endpoint for retrieving the top selling products
+        description: |
+          Retrieves the top selling products based on their sales volume.
+        tags:
+          - GetProductsList
+        responses:
+          200:
+            description: JSON object containing a list of the top selling products
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      Product:
+                        type: string
+                      Rate:
+                        type: number
+            examples:
+              application/json:
+                products:
+                  - Product: "Product_1"
+                    Rate: 10
+                  - Product: "Product_2"
+                    Rate: 15
+
+  "/similarproducts":
+    get:
+      summary: Endpoint for retrieving similar products based on a given product name
+      description: |
+        Retrieves similar products based on a given product name and returns them as a JSON response.
+        **Example Usage**: GET  /similarproducts?prod=product_name
+      tags:
+        - BasedOnProducts
+      parameters:
+        - name: prod
+          in: query
+          type: string
+          required: true
+          description: The name of the product for which similar products are requested
+
+      responses:
+        200:
+          description: JSON object containing the requested product and a list of similar products
+          schema:
+            type: object
+            properties:
+              product:
+                type: string
+              products:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Product:
+                      type: string
+                    Rate:
+                      type: number
+          examples:
+            application/json:
+                product: "example_product"
+                products:
+                  - Product: "product_1"
+                    Rate: 10
+                  - Product: "product_2"
+                    Rate: 9
+        400:
+          description: Product name is required
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Product name is required"
+        404:
+          description: Product not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Product not found"
+      security: []
+
+  "/cust_freq_purchased":
+    get:
+      summary: Endpoint for retrieving the most frequently purchased products by a given customer
+      description: |
+        Retrieves the most frequently purchased products by a given customer.
+        It retrieves this information from the data and returns it as a JSON response.
+
+        **Example Usage**: GET  /cust_freq_purchased?name=12345
+      tags:
+        - BasedOnCustomer
+      parameters:
+        - name: name
+          in: query
+          type: string
+          required: true
+          description: The id of the customer for which most frequently purchased products are requested
+      responses:
+        200:
+          description: JSON object containing the requested customer and a list of most frequently purchased products
+          schema:
+            type: object
+            properties:
+              customer:
+                type: string
+              products:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Product:
+                      type: string
+                    Rate:
+                      type: number
+          examples:
+            application/json:
+                customer: "example_customer"
+                products:
+                  - Product: "product_1"
+                    Rate: 10
+                  - Product: "product_2"
+                    Rate: 9
+
+        400:
+          description: Customer id is required
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer id is required"
+        404:
+          description: Customer not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer not found"
+      security: []
+
+  "/cust_most_purchased":
+    get:
+      summary: Endpoint for retrieving the most purchased products by a given customer
+      description: |
+        Retrieves the most purchased products by a given customer along with their respective rates.
+        It retrieves this information from the data and returns it as a JSON response.
+
+        **Example Usage**: GET /cust_most_purchased?name=12345
+      tags:
+        - BasedOnCustomer
+      parameters:
+        - name: name
+          in: query
+          type: string
+          required: true
+          description: The id of the customer for which most purchased products are requested
+      responses:
+        200:
+          description: JSON object containing the requested customer and a list of most purchased products with their respective rates
+          schema:
+            type: object
+            properties:
+              customer:
+                type: string
+              products:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Product:
+                      type: string
+                    Rate:
+                      type: number
+          examples:
+            application/json:
+                customer: "example_customer"
+                products:
+                  - Product: "Product_1"
+                    Rate: 10
+                  - Product: "Product_2"
+                    Rate: 15
+        400:
+          description: Customer id is required
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer id is required"
+        404:
+          description: Customer not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer not found"
+      security: []
+
+  "/recommend_prod_cust":
+    get:
+      summary: Endpoint for getting recommended products for a given customer 
+      description: |
+        Recommends products to a given customer based on their purchase history.
+        It retrieves this information from the data and returns it as a JSON response.
+
+        **Example Usage**: GET /recommend_prod_cust?name=12345
+      tags:
+        - BasedOnCustomer
+      parameters:
+        - name: name
+          in: query
+          type: string
+          required: true
+          description: The id of the customer for whom product recommendations are requested
+      responses:
+        200:
+          description: JSON object containing the requested customer and a list of recommended products
+          schema:
+            type: object
+            properties:
+              customer:
+                type: string
+              products:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Product:
+                      type: string
+                    Rate:
+                      type: number
+          examples:
+            application/json:
+                customer: "example_customer"
+                products:
+                  - Product: "Product_1"
+                    Rate: 10
+                  - Product: "Product_2"
+                    Rate: 15
+        400:
+          description: Customer id is required
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer id is required"
+        404:
+          description: Customer not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer not found"
+      security: []
